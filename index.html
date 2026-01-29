@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HVAC工程计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+            font-size: 16px;
+            overflow-x: hidden;
+        }
+        .header {
+            background: #1e293b;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header h1 {
+            font-size: 18px;
+            color: #fff;
+            margin: 0;
+        }
+        .nav {
+            display: flex;
+            background: #0f172a;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 51px;
+            z-index: 999;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 12px 4px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #94a3b8;
+            font-size: 12px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            outline: none;
+        }
+        .nav-btn.active {
+            color: #38bdf8;
+            border-bottom-color: #0ea5e9;
+            background: rgba(14, 165, 233, 0.1);
+        }
+        .nav-icon {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+        .panel {
+            display: none;
+        }
+        .panel.active {
+            display: block;
+        }
+        .mode-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            outline: none;
+        }
+        .mode-btn.active {
+            background: #0ea5e9;
+            color: #fff;
+            border-color: #0ea5e9;
+        }
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            height: 45px;
+            padding: 0 12px;
+            border: 2px solid #475569;
+            background: #0f172a;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 8px;
+            -webkit-appearance: none;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #0ea5e9;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        .shape-btns {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .shape-btn {
+            flex: 1;
+            height: 45px;
+            background: transparent;
+            border: 2px solid #475569;
+            color: #94a3b8;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            outline: none;
+        }
+        .shape-btn.active {
+            border-color: #0ea5e9;
+            background: rgba(14, 165, 233, 0.2);
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .calc-btn {
+            width: 100%;
+            height: 50px;
+            background: #0ea5e9;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            -webkit-appearance: none;
+            outline: none;
+            margin-top: 10px;
+        }
+        .calc-btn:active {
+            opacity: 0.9;
+        }
+        .result {
+            background: rgba(14, 165, 233, 0.1);
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .result-unit {
+            color: #0ea5e9;
+            font-size: 14px;
+        }
+        .result-detail {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .hint {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .checkbox-wrap {
+            margin: 15px 0;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            color: #94a3b8;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .checkbox-label input {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            accent-color: #0ea5e9;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🔧 HVAC工程计算器</h1>
+    </div>
+
+    <div class="nav">
+        <button class="nav-btn active" onclick="switchTab('airflow')">
+            <span class="nav-icon">💨</span>
+            <span>风量</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('cooling')">
+            <span class="nav-icon">❄️</span>
+            <span>冷量</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('power')">
+            <span class="nav-icon">⚡</span>
+            <span>功率</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('convert')">
+            <span class="nav-icon">🔄</span>
+            <span>换算</span>
+        </button>
+    </div>
+
+    <div class="container">
+
+        <!-- 风量计算 -->
+        <div id="panel-airflow" class="panel active">
+            <div class="mode-btns">
+                <button class="mode-btn active" onclick="setMode('duct')">管道法</button>
+                <button class="mode-btn" onclick="setMode('ach')">换气法</button>
+                <button class="mode-btn" onclick="setMode('load')">负荷法</button>
+            </div>
+
+            <!-- 管道法 -->
+            <div id="form-duct">
+                <div class="card">
+                    <div class="shape-btns">
+                        <button class="shape-btn active" onclick="setShape('round')">圆形</button>
+                        <button class="shape-btn" onclick="setShape('rect')">矩形</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>风速 (m/s) *</label>
+                        <input type="number" id="in-velocity" step="0.1" placeholder="例如: 4.5">
+                    </div>
+
+                    <div id="wrap-round">
+                        <div class="form-group">
+                            <label>管径 (mm) *</label>
+                            <input type="number" id="in-diameter" step="1" placeholder="例如: 200">
+                        </div>
+                    </div>
+
+                    <div id="wrap-rect" class="hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>宽度 (mm) *</label>
+                                <input type="number" id="in-width" step="1" placeholder="300">
+                            </div>
+                            <div class="form-group">
+                                <label>高度 (mm) *</label>
+                                <input type="number" id="in-height" step="1" placeholder="200">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="calc-btn" onclick="calcDuct()">计算风量</button>
+
+                    <div id="res-duct" class="result">
+                        <div style="color: #0ea5e9; font-size: 12px; margin-bottom: 5px;">计算结果</div>
+                        <div class="result-value">
+                            <span id="val-duct">0</span>
+                            <span class="result-unit">m³/h</span>
+                        </div>
+                        <div class="result-detail" id="detail-duct"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 换气法 -->
+            <div id="form-ach" class="hidden">
+                <div class="card">
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>长(m)*</label>
+                            <input type="number" id="in-length" step="0.1" placeholder="8">
+                        </div>
+                        <div class="form-group">
+                    
